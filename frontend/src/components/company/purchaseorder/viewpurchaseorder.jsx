@@ -16,6 +16,7 @@ function View_purchase_order () {
     return (
         <>
         <FinBase />
+        
         </>
     )
 }

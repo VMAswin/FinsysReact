@@ -9215,3 +9215,90 @@ def Fin_fetch_vendor_history(request, id):
         )
         
 #End
+
+#Purchase Order
+
+@api_view(("GET",))
+def Fin_fetch_vendors(request,ID):
+    try:
+        data = Fin_Login_Details.objects.get(id=ID)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id=ID)
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id=ID).company_id
+        vendors = Fin_Vendor.objects.filter(Company=com)
+        serializer = VendorSerializer(vendors, many=True)
+        return Response(
+            {"status": True, "vendors": serializer.data}, status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        return Response(
+            {"status": False, "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    
+@api_view(("GET",))
+def Fin_get_vendor_details(request,id):
+    try:
+        vend = Fin_Vendor.objects.get(id=id)
+        details = {
+            'id':vend.id,
+            'gstType': vend.GST_Treatment,
+            'email': vend.Vendor_email,
+            'gstIn': vend.GST_Number if vend.GST_Number else "None",
+            'placeOfSupply': vend.Place_of_supply,
+            'address': f"{vend.Billing_street},{vend.Billing_city}\n{vend.Billing_state}\n{vend.Billing_country}\n{vend.Billing_pincode}",
+            'name': f"{vend.Title}. {vend.First_name} {vend.Last_name}"
+        }
+        return Response(
+            {"status": True, "vendorDetails":details}, status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        print(e)
+        return Response(
+            {"status": False, "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    
+@api_view(("GET",))
+def Fin_fetch_customers(request,ID):
+    try:
+        data = Fin_Login_Details.objects.get(id=ID)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id=ID)
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id=ID).company_id
+        customers = Fin_Customers.objects.filter(Company=com)
+        serializer = CustomerSerializer(customers, many=True)
+        return Response(
+            {"status": True, "customers": serializer.data}, status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        return Response(
+            {"status": False, "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    
+@api_view(("GET",))
+def Fin_get_customer_details(request,id):
+    try:
+        cust = Fin_Customers.objects.get(id=id)
+        details = {
+            'id':cust.id,
+            'gstType': cust.gst_type,
+            'email': cust.email,
+            'gstIn': cust.gstin if cust.gstin else "None",
+            'placeOfSupply': cust.place_of_supply,
+            'address': f"{cust.billing_street},{cust.billing_city}\n{cust.billing_state}\n{cust.billing_country}\n{cust.billing_pincode}",
+            'name': f"{cust.title}. {cust.first_name} {cust.last_name}"
+        }
+        return Response(
+            {"status": True, "customerDetails":details}, status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        print(e)
+        return Response(
+            {"status": False, "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    

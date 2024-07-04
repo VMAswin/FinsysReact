@@ -225,6 +225,12 @@ urlpatterns = [
     path('add_vendor_comment/',Fin_add_vendor_comment),
     path('fetch_vendor_history/<int:id>/',Fin_fetch_vendor_history),
 
+    #Purchase Order
+    path('fetch_vendors/<int:ID>/',Fin_fetch_vendors),
+    path('get_vendor_details/<int:id>/',Fin_get_vendor_details),
+    path('fetch_customers/<int:ID>/',Fin_fetch_customers),
+    path('get_customer_details/<int:id>/',Fin_get_customer_details),
+
     re_path(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
     
 ]

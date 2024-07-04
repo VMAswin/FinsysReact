@@ -1326,7 +1326,7 @@ function FinBase() {
 
                   {/* {% if allmodules.Purchase_Order == 1 %} */}
                   {/* <li id="purchaseorder"><a href="{% url 'Fin_purchaseOrder' %}"><i className="bx bx-right-arrow-alt"></i>Purchase Order</a> */}
-                  <li id="purchaseorder"><Link to="/view_purchase_order"><i className="bx bx-right-arrow-alt"></i>Purchase Order</Link>
+                  <li id="purchaseorder"><Link to="/purchase_order"><i className="bx bx-right-arrow-alt"></i>Purchase Order</Link>
                   </li>
                   {/* {% endif %} */}
 
