@@ -226,10 +226,14 @@ urlpatterns = [
     path('fetch_vendor_history/<int:id>/',Fin_fetch_vendor_history),
 
     #Purchase Order
-    path('fetch_vendors/<int:ID>/',Fin_fetch_vendors),
-    path('get_vendor_details/<int:id>/',Fin_get_vendor_details),
-    path('fetch_customers/<int:ID>/',Fin_fetch_customers),
-    path('get_customer_details/<int:id>/',Fin_get_customer_details),
+    path('fetch_purchase_order_data/<int:id>/',Fin_fetch_purchase_order_data),
+    path('get_vendor_data/',Fin_get_vendor_data),
+    path('create_new_purchase_order/',Fin_create_new_purchase_order),
+    # path('fetch_vendors/<int:ID>/',Fin_fetch_vendors),
+    # path('get_vendor_details/<int:id>/',Fin_get_vendor_details),
+    # path('fetch_customers/<int:ID>/',Fin_fetch_customers),
+    # path('get_customer_details/<int:id>/',Fin_get_customer_details),
+    # path('get_item_details/<int:id>/',Fin_get_item_details),
 
     re_path(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
     
