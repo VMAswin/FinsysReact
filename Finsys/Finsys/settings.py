@@ -88,7 +88,7 @@ CORS_ORIGIN_WHITELIST = ("http://localhost:3000",)
 # CORS_ORIGIN_WHITELIST = ("https://infinityfoxtech.com",)
 
 # Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databasesfinsys-react
 
 DATABASES = {
     "default": {

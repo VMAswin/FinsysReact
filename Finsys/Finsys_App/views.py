@@ -1,6 +1,7 @@
 #React Finsys
 
 from django.shortcuts import render
+import pandas as pd
 from Finsys_App.models import *
 from django.http import HttpResponse, JsonResponse
 from .serializers import *
@@ -9247,12 +9248,12 @@ def Fin_fetch_purchase_order_data(request, id):
         vendserializer = VendorSerializer(vendors,many=True)
         # Fetching last sales order and assigning upcoming ref no as current + 1
         # Also check for if any bill is deleted and ref no is continuos w r t the deleted sales order
-        latest_so = Fin_Sales_Order.objects.filter(Company = cmp).order_by('-id').first()
+        latest_so = Fin_Purchase_Order.objects.filter(Company = cmp).order_by('-id').first()
 
         new_number = int(latest_so.reference_no) + 1 if latest_so else 1
 
-        if Fin_Sales_Order_Reference.objects.filter(Company = cmp).exists():
-            deleted = Fin_Sales_Order_Reference.objects.get(Company = cmp)
+        if Fin_Purchase_Order_Reference.objects.filter(Company = cmp).exists():
+            deleted = Fin_Purchase_Order_Reference.objects.get(Company = cmp)
             
             if deleted:
                 while int(deleted.reference_no) >= new_number:
@@ -9260,9 +9261,9 @@ def Fin_fetch_purchase_order_data(request, id):
 
         # Finding next SO number w r t last SO number if exists.
         nxtSO = ""
-        lastSO = Fin_Sales_Order.objects.filter(Company = cmp).last()
+        lastSO = Fin_Purchase_Order.objects.filter(Company = cmp).last()
         if lastSO:
-            salesOrder_no = str(lastSO.sales_order_no)
+            salesOrder_no = str(lastSO.purchase_order_no)
             numbers = []
             stri = []
             for word in salesOrder_no:
@@ -9339,16 +9340,77 @@ def Fin_get_vendor_data(request):
 def Fin_create_new_purchase_order(request):
     try:
         v_id = request.data["Id"]
-        vname = request.data["Vname"]
+        data = Fin_Login_Details.objects.get(id=v_id)
+        if data.User_Type == "Company":
+            cmp = Fin_Company_Details.objects.get(Login_Id=v_id)
+        else:
+            cmp = Fin_Staff_Details.objects.get(Login_Id=v_id).company_id
+        vn = request.data["Vname"]
         vmail = request.data["vemail"]
         vaddress = request.data["vaddress"]
         vplace = request.data["vplace"]
         vgst_type = request.data["vgst_type"]
         vgst_no = request.data["vgst_no"]
-        cname = request.data["Cname"]
+        refno = request.data["refno"]
+        pono = request.data["poNo"]
         payterm = request.data["payterm"]
-        print(payterm)
-        
+        date = request.data["date"]
+        due_date = request.data["due_date"]
+        cn = request.data["Cname"]
+        Caddress = request.data["Caddress"]
+        Cplace = request.data["Cplace"]
+        Cgst_type = request.data["Cgst_type"]
+        Cemail = request.data["Cemail"]
+        Cgst_no = request.data["Cgst_no"]
+        paymethod = request.data["paymethod"]
+        chequeno = request.data["chequeno"]
+        upiId = request.data["upiId"]
+        accountNumber = request.data["accountNumber"]
+        subtotal = request.data["subtotal"]
+        igst = request.data["igst"]
+        cgst = request.data["cgst"]
+        sgst = request.data["sgst"]
+        taxAmount = request.data["taxAmount"]
+        shippingCharge = request.data["shippingCharge"]
+        adjustment = request.data["adjustment"]
+        grandTotal = request.data["grandTotal"]
+        paid = request.data["paid"]
+        balance = request.data["balance"]
+        description  = request.data["description"]
+        file = request.data["file"]
+        vend = Fin_Vendor.objects.get(id=vn)
+        vend_name = vend.Title +" "+ vend.First_name +" "+ vend.Last_name
+        cust = Fin_Customers.objects.get(id=cn)
+        cust_name = cust.title +" "+ cust.first_name+" "+cust.last_name
+        payt = Fin_Company_Payment_Terms.objects.get(id=payterm)
+        formatted_date = pd.to_datetime(due_date).strftime('%Y-%m-%d')
+        PO = Fin_Purchase_Order.objects.create(Company=cmp,LoginDetails=data,Vendor=vend,vendor_name=vend_name,vendor_email=vmail,vendor_address=vaddress,vendor_gst_type=vgst_type,                                       
+        vendor_gstin=vgst_no,vendor_source_of_supply=vplace,reference_no=refno,purchase_order_no=pono,payment_terms=payt,purchase_order_date=date,due_date=formatted_date,payment_method=paymethod,
+        cheque_no=chequeno,upi_no=upiId,bank_acc_no=accountNumber,Customer=cust,customer_name=cust_name,customer_email=Cemail,customer_address=Caddress,customer_gst_type=Cgst_type,customer_gstin=Cgst_no,
+        customer_place_of_supply=Cplace,subtotal=subtotal,igst=igst,cgst=cgst,sgst=sgst,tax_amount=taxAmount,adjustment=adjustment,shipping_charge=shippingCharge,grandtotal=grandTotal,
+        paid_off=paid,balance=balance,note=description,file=file)
+        PO.save()
+        purchase_items = request.data["purchaseOrderItems"]
+        for p in purchase_items:
+            item_id = p.get('item')
+            item = Fin_Items.objects.get(id=item_id)
+            hsn = p.get('hsnSac') if item.item_type == 'Goods' else None
+            sac = p.get('hsnSac') if item.item_type != 'Goods' else None
+            quantity = p.get('quantity')
+            price = p.get('price')
+            # pricelist = p.get('priceListPrice')
+            # taxGst = p.get('taxGst')
+            # taxIgst = p.get('taxIgst')
+            tax = p.get('taxGst') if cmp.State == request.data['Cplace'] else p.get('taxIgst')
+            discount = p.get('discount')
+            total = p.get('total')
+            # taxamount = p.get('taxAmount')
+            POitem = Fin_Purchase_Order_Items.objects.create(PurchaseOrder=PO,Item=item,hsn=hsn,sac=sac,quantity=quantity,price=price,total=total,tax=tax,discount=discount)
+            POitem.save()
+        POhistory = Fin_Purchase_Order_History.objects.create(Company=cmp,LoginDetails=data,PurchaseOrder=PO,action='Created')
+        POhistory.save()
+        POreferance = Fin_Purchase_Order_Reference.objects.create(Company=cmp,LoginDetails=data,reference_no=refno)
+        POreferance.save()
         return Response(
             {"status": True,"message":"success"}, status=status.HTTP_200_OK
         )
@@ -9358,3 +9420,34 @@ def Fin_create_new_purchase_order(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
     
+@api_view(("GET",))
+def Fin_fetch_purchase_order(request, id):
+    try:
+        data = Fin_Login_Details.objects.get(id=id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id=id)
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id=id).company_id
+
+        purchase = Fin_Purchase_Order.objects.filter(Company = com)
+        pur = []
+        for i in purchase:
+            obj = {
+                "id": i.id,
+                "purchase_order_no": i.purchase_order_no,
+                "vendor_name": i.Vendor.First_name+" "+i.Vendor.Last_name,
+                "vendor_mail":i. vendor_email,
+                "grandtotal": i.grandtotal,
+                "status": i.status,
+                "balance": i.balance,
+                "date":i.purchase_order_date,
+            }
+            pur.append(obj)
+        return Response(
+            {"status": True, "purchaseorder": pur}, status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        return Response(
+            {"status": False, "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

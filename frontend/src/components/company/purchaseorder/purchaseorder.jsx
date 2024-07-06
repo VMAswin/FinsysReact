@@ -9,9 +9,104 @@ import config from "../../../functions/config";
 
 function Purchase_order () {
 
+  const ID = Cookies.get('Login_id');
+  const [purchaseorders, setPurchaseorder] = useState([]);
 
+  const fetchpurchaseorder = () =>{
+    axios.get(`${config.base_url}/fetch_purchase_order/${ID}/`).then((res)=>{
+      if(res.data.status){
+        var sls = res.data.purchaseorder;
+        setPurchaseorder([])
+        sls.map((i)=>{
+          setPurchaseorder((prevState)=>[
+            ...prevState, i
+          ])
+        })
+      }
+    }).catch((err)=>{
+      console.log('ERR',err)
+    })
+  }
+  useEffect(()=>{
+    fetchpurchaseorder();
+  },[])
+  const navigate = useNavigate();
+  function exportToExcel() {
+    const Table = document.getElementById("purchaseOrderTableExport");
+    const ws = XLSX.utils.table_to_sheet(Table);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.writeFile(wb, "PurchaseOrders.xlsx");
+  }
+  function searchTable(){
+    var rows = document.querySelectorAll('#purchaseOrderTable tbody tr');
+    var val = document.getElementById('search').value.trim().replace(/ +/g, ' ').toLowerCase();
+    rows.forEach(function(row) {
+      var text = row.textContent.replace(/\s+/g, ' ').toLowerCase();
+      row.style.display = text.includes(val) ? '' : 'none';
+    });
+  }
+  function refreshAll(){
+    setPurchaseorder([])
+    fetchpurchaseorder();
+  }
+  function sortTable(columnIndex) {
+    var table, rows, switching, i, x, y, shouldSwitch;
+    table = document.getElementById("purchaseOrderTable");
+    switching = true;
 
+    while (switching) {
+      switching = false;
+      rows = table.rows;
 
+      for (i = 1; i < rows.length - 1; i++) {
+        shouldSwitch = false;
+        x = rows[i]
+          .getElementsByTagName("td")
+          [columnIndex].textContent.toLowerCase();
+        y = rows[i + 1]
+          .getElementsByTagName("td")
+          [columnIndex].textContent.toLowerCase();
+
+        if (x > y) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+  }
+  function filterTable(row,filterValue) {
+    var table1 = document.getElementById("purchaseOrderTable");
+    var rows1 = table1.getElementsByTagName("tr");
+
+    for (var i = 1; i < rows1.length; i++) {
+      var statusCell = rows1[i].getElementsByTagName("td")[row];
+
+      if (filterValue == "all" || statusCell.textContent.toLowerCase() == filterValue) {
+        rows1[i].style.display = "";
+      } else {
+        rows1[i].style.display = "none";
+      }
+    }
+
+    var table2 = document.getElementById("purchaseOrderTableExport");
+    var rows2 = table2.getElementsByTagName("tr");
+
+    for (var i = 1; i < rows2.length; i++) {
+      var statusCell = rows2[i].getElementsByTagName("td")[row];
+
+      if (filterValue == "all" || statusCell.textContent.toLowerCase() == filterValue) {
+        rows2[i].style.display = "";
+      } else {
+        rows2[i].style.display = "none";
+      }
+    }
+  }
     return (
         <>
         <FinBase />
@@ -42,7 +137,7 @@ function Purchase_order () {
                       className="form-control"
                       placeholder="Search.."
                       autoComplete="off"
-                    //   onKeyUp={searchTable}
+                      onKeyUp={searchTable}
                     />
                     <div
                       className="dropdown ml-1"
@@ -62,7 +157,7 @@ function Purchase_order () {
                       >
                         <a
                           className="dropdown-item"
-                        //   onClick={refreshAll}
+                          onClick={refreshAll}
                           style={{
                             height: "40px",
                             fontSize: "15px",
@@ -79,9 +174,9 @@ function Purchase_order () {
                             color: "white",
                             cursor: "pointer",
                           }}
-                        //   onClick={()=>sortTable(2)}
+                          onClick={()=>sortTable(2)}
                         >
-                          Customer Name
+                          Vendor Name
                         </a>
                         <a
                           className="dropdown-item"
@@ -91,9 +186,9 @@ function Purchase_order () {
                             color: "white",
                             cursor: "pointer",
                           }}
-                        //   onClick={()=>sortTable(1)}
+                          onClick={()=>sortTable(1)}
                         >
-                          Sales Order No.
+                          Purchase Order No.
                         </a>
                       </div>
                     </div>
@@ -106,7 +201,7 @@ function Purchase_order () {
                     style={{ width: "fit-content", height: "fit-content" }}
                     className="btn btn-outline-secondary text-grey"
                     id="exportBtn"
-                    // onClick={exportToExcel}
+                    onClick={exportToExcel}
                   >
                     <i className="fa fa-table"></i> Export To Excel
                   </button>
@@ -131,7 +226,7 @@ function Purchase_order () {
                           color: "white",
                           cursor: "pointer",
                         }}
-                        // onClick={()=>filterTable(5,'all')}
+                        onClick={()=>filterTable(5,'all')}
                       >
                         All
                       </a>
@@ -143,7 +238,7 @@ function Purchase_order () {
                           color: "white",
                           cursor: "pointer",
                         }}
-                        // onClick={()=>filterTable(5,'saved')}
+                        onClick={()=>filterTable(5,'saved')}
                       >
                         Saved
                       </a>
@@ -155,7 +250,7 @@ function Purchase_order () {
                           color: "white",
                           cursor: "pointer",
                         }}
-                        // onClick={()=>filterTable(5,'draft')}
+                        onClick={()=>filterTable(5,'draft')}
                       >
                         Draft
                       </a>
@@ -177,7 +272,7 @@ function Purchase_order () {
           <div className="table-responsive">
             <table
               className="table table-responsive-md table-hover mt-4"
-              id="salesOrderTable"
+              id="purchaseOrderTable"
               style={{ textAlign: "center" }}
             >
               <thead>
@@ -194,16 +289,17 @@ function Purchase_order () {
                 </tr>
               </thead>
               <tbody>
-                {/* {salesOrders &&salesOrders.map((i,index)=>(
+                {purchaseorders &&purchaseorders.map((i,index)=>(
                   <tr
                     className="clickable-row"
                     onDoubleClick={()=>navigate(`/view_sales_order/${i.id}/`)}
                     style={{ cursor: "pointer" }}
                   >
                     <td>{index+1}</td>
-                    <td>{i.sales_order_no}</td>
-                    <td>{i.customer_name}</td>
-                    <td>{i.customer_email}</td>
+                    <td>{i.date}</td>
+                    <td>{i.purchase_order_no}</td>
+                    <td>{i.vendor_name}</td>
+                    <td>{i.vendor_mail}</td>
                     <td>{i.grandtotal}</td>
                     <td>{i.status}</td>
                     <td>{i.balance}</td>
@@ -219,13 +315,13 @@ function Purchase_order () {
                       </div>
                     </td>
                   </tr>
-                ))} */}
+                ))}
               </tbody>
             </table>
           </div>
         </div>
       </div>
-      <table className="salesOrderTable" id="salesOrderTableExport" hidden>
+      <table className="purchaseOrderTable" id="purchaseOrderTableExport" hidden>
       <thead>
         <tr>
           <th>#</th>
@@ -239,17 +335,18 @@ function Purchase_order () {
         </tr>
       </thead>
       <tbody>
-        {/* {salesOrders && salesOrders.map((i,index)=>(
+        {purchaseorders && purchaseorders.map((i,index)=>(
           <tr>
             <td>{index+1}</td>
-            <td>{i.sales_order_no}</td>
-            <td>{i.customer_name}</td>
-            <td>{i.customer_email}</td>
+            <td>{i.date}</td>
+            <td>{i.purchase_order_no}</td>
+            <td>{i.vendor_name}</td>
+            <td>{i.vendor_mail}</td>
             <td>{i.grandtotal}</td>
             <td>{i.status}</td>
             <td>{i.balance}</td>
           </tr>
-        ))} */}
+        ))}
       </tbody>
       </table>
         </>

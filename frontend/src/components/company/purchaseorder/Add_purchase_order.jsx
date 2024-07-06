@@ -218,7 +218,7 @@ function Add_Purchase_Order() {
   const [status, setStatus] = useState("");
   const [file, setFile] = useState(null);
 
-  const [salesOrderItems, setSalesOrderItems] = useState([
+  const [purchaseOrderItems, setpurchaseOrderItems] = useState([
     {
       id: 1,
       item: "",
@@ -335,13 +335,13 @@ function Add_Purchase_Order() {
       setPriceListId("");
       document.getElementById("custPriceListName").style.display = "none";
       document.getElementById("custPriceListName").innerText = "";
-      const updatedItems = salesOrderItems.map((item) => {
+      const updatedItems = purchaseOrderItems.map((item) => {
         return {
           ...item,
           priceListPrice: "",
         };
       });
-      setSalesOrderItems(updatedItems);
+      setpurchaseOrderItems(updatedItems);
       refreshIndexes(updatedItems)
     }
   }
@@ -354,10 +354,10 @@ function Add_Purchase_Order() {
       document.getElementById("custPriceListName").innerText = "";
       setPriceList(false);
       checkPriceList2();
-      calc3(salesOrderItems);
+      calc3(purchaseOrderItems);
     } else {
       let updatedItems = await Promise.all(
-        salesOrderItems.map(async (pItem) => {
+        purchaseOrderItems.map(async (pItem) => {
           var itemId = pItem.item;
           var plc = placeOfSupply;
           var PLId = priceListId;
@@ -408,7 +408,7 @@ function Add_Purchase_Order() {
         })
       );
 
-      setSalesOrderItems(updatedItems);
+      setpurchaseOrderItems(updatedItems);
       refreshIndexes(updatedItems)
       checkPriceList2();
       refreshTax(placeOfSupply);
@@ -417,7 +417,7 @@ function Add_Purchase_Order() {
   }
 
   function calculate() {
-    var rows = document.querySelectorAll("#salesOrderItemsTable tbody tr");
+    var rows = document.querySelectorAll("#purchaseOrderItemsTable tbody tr");
     rows.forEach(function (row) {
       var html = row.innerHTML;
       if (html != "") {
@@ -511,7 +511,7 @@ function Add_Purchase_Order() {
     formData.append("paid_off", checkForZero(paid));
     formData.append("balance", checkBalanceVal(balance));
     formData.append("note", description);
-    formData.append("salesOrderItems", JSON.stringify(salesOrderItems));
+    formData.append("purchaseOrderItems", JSON.stringify(purchaseOrderItems));
 
     if (file) {
       formData.append("file", file);
@@ -682,7 +682,7 @@ function Add_Purchase_Order() {
       total: "",
       taxAmount: "",
     };
-    setSalesOrderItems((prevItems) => {
+    setpurchaseOrderItems((prevItems) => {
       const updatedItems = [...prevItems, newItem];
 
       return updatedItems.map((item, index) => ({
@@ -693,7 +693,7 @@ function Add_Purchase_Order() {
   };
 
   const removeRow = (id) => {
-    setSalesOrderItems((prevItems) => {
+    setpurchaseOrderItems((prevItems) => {
       const updatedItems = prevItems.filter((item) => item.id !== id);
 
       return updatedItems.map((item, index) => ({
@@ -703,8 +703,8 @@ function Add_Purchase_Order() {
     });
   };
 
-  const handleSalesOrderItemsInputChange = (id, field, value) => {
-    setSalesOrderItems((prevItems) =>
+  const handlepurchaseOrderItemsInputChange = (id, field, value) => {
+    setpurchaseOrderItems((prevItems) =>
       prevItems.map((item) =>
         item.id === id ? { ...item, [field]: value } : item
       )
@@ -715,7 +715,7 @@ function Add_Purchase_Order() {
     var exists = itemExists(value);
     if (!exists) {
       if (placeOfSupply != "") {
-        handleSalesOrderItemsInputChange(id, "item", value);
+        handlepurchaseOrderItemsInputChange(id, "item", value);
         getItemData(value, id);
       } else {
         alert("Select Place of Supply.!");
@@ -728,7 +728,7 @@ function Add_Purchase_Order() {
   };
 
   const itemExists = (itemToCheck) => {
-    for (const item of salesOrderItems) {
+    for (const item of purchaseOrderItems) {
       if (item.item === itemToCheck) {
         return true;
       }
@@ -744,7 +744,7 @@ function Add_Purchase_Order() {
     if (!exists) {
       if (plc != "") {
         if (priceList && PLId == "") {
-          handleSalesOrderItemsInputChange(id, "item", "");
+          handlepurchaseOrderItemsInputChange(id, "item", "");
           alert("Select a Price List from the dropdown..!");
         } else {
           var itm = {
@@ -760,7 +760,7 @@ function Add_Purchase_Order() {
               if (res.data.status) {
                 var itemData = res.data.itemData;
 
-                setSalesOrderItems((prevItems) =>
+                setpurchaseOrderItems((prevItems) =>
                   prevItems.map((item) =>
                     item.id === id
                       ? {
@@ -800,7 +800,7 @@ function Add_Purchase_Order() {
   }
 
   function resetItem(id) {
-    setSalesOrderItems((prevItems) =>
+    setpurchaseOrderItems((prevItems) =>
       prevItems.map((item) => (item.id === id ? { ...item, item: "" } : item))
     );
   }
@@ -888,8 +888,8 @@ function Add_Purchase_Order() {
       setTerm("");
     }
   }
-  const calc3 = (salesOrderItems) => {
-    const updatedItems = salesOrderItems.map((item) => {
+  const calc3 = (purchaseOrderItems) => {
+    const updatedItems = purchaseOrderItems.map((item) => {
       console.log("CALC3==", item);
 
       let qty = parseInt(item.quantity || 0);
@@ -917,7 +917,7 @@ function Add_Purchase_Order() {
   };
 
   function calc2(placeOfSupply) {
-    const updatedItems = salesOrderItems.map((item) => {
+    const updatedItems = purchaseOrderItems.map((item) => {
       var qty = parseInt(item.quantity || 0);
       if (priceList) {
         var price = parseFloat(item.priceListPrice || 0);
@@ -940,13 +940,13 @@ function Add_Purchase_Order() {
       };
     });
 
-    setSalesOrderItems(updatedItems);
+    setpurchaseOrderItems(updatedItems);
     refreshIndexes(updatedItems)
     calc_total2(updatedItems, placeOfSupply);
   }
 
   const calc = () => {
-    const updatedItems = salesOrderItems.map((item) => {
+    const updatedItems = purchaseOrderItems.map((item) => {
       var qty = parseInt(item.quantity || 0);
       if (priceList) {
         var price = parseFloat(item.priceListPrice || 0);
@@ -969,18 +969,18 @@ function Add_Purchase_Order() {
       };
     });
 
-    setSalesOrderItems(updatedItems);
+    setpurchaseOrderItems(updatedItems);
     refreshIndexes(updatedItems);
     calc_total(updatedItems);
   };
 
-  function calc_total(salesOrderItems) {
+  function calc_total(purchaseOrderItems) {
     var total = 0;
     var taxamount = 0;
-    salesOrderItems.map((item) => {
+    purchaseOrderItems.map((item) => {
       total += parseFloat(item.total || 0);
     });
-    salesOrderItems.map((item) => {
+    purchaseOrderItems.map((item) => {
       taxamount += parseFloat(item.taxAmount || 0);
     });
     setSubTotal(total.toFixed(2));
@@ -1012,13 +1012,13 @@ function Add_Purchase_Order() {
     }
   }
 
-  function calc_total2(salesOrderItems, placeOfSupply) {
+  function calc_total2(purchaseOrderItems, placeOfSupply) {
     var total = 0;
     var taxamount = 0;
-    salesOrderItems.map((item) => {
+    purchaseOrderItems.map((item) => {
       total += parseFloat(item.total || 0);
     });
-    salesOrderItems.map((item) => {
+    purchaseOrderItems.map((item) => {
       taxamount += parseFloat(item.taxAmount || 0);
     });
     setSubTotal(total.toFixed(2));
@@ -1167,7 +1167,7 @@ function Add_Purchase_Order() {
       id: index + 1,
     }));
 
-    setSalesOrderItems(itms)
+    setpurchaseOrderItems(itms)
   }
 
   function paymentMethodChange(val) {
@@ -1486,6 +1486,10 @@ function Add_Purchase_Order() {
     setCustomerGstType(value);
     checkGstType(value);
   }
+  function handleVGstType(value) {
+    setVGstType(value);
+    checkGstType(value);
+  }
 
   function checkGstType(value) {
     var gstTypeElement = document.getElementById("gstType");
@@ -1613,6 +1617,10 @@ function Add_Purchase_Order() {
     setOBalType(val);
     changeOpenBalType(val);
   }
+  function handleVOpenBalType(val) {
+    setVOBalType(val);
+    changeOpenBalType(val);
+  }
 
   function changeOpenBalType(type) {
     var openbal = oBal;
@@ -1633,6 +1641,24 @@ function Add_Purchase_Order() {
     }
   }
 
+  function changeOpenBalType(type) {
+    var openbal = VoBal;
+    if (openbal != "") {
+      if (type == "credit") {
+        if (parseFloat(openbal) != 0) {
+          setOBal(-1 * openbal);
+        } else {
+          setOBal(openbal);
+        }
+      } else {
+        if (parseFloat(openbal) < 0) {
+          setOBal(Math.abs(openbal));
+        } else {
+          setOBal(openbal);
+        }
+      }
+    }
+  }
   const handleNewCustomerModalSubmit = (e) => {
     e.preventDefault();
 
@@ -2138,7 +2164,6 @@ function Add_Purchase_Order() {
     var dt = {
       Id:ID,
       Vname:vendor,
-      Cname:customer,
       vemail:Vemail,
       vgst_type:Vgst_type,
       vgst_no:Vgst_in,
@@ -2146,6 +2171,34 @@ function Add_Purchase_Order() {
       vplace:VPlace,
       refno:refNo,
       payterm:term,
+      poNo:salesOrderNo,
+      date:date,
+      due_date:shipmentDate,
+      Cname:customer,
+      Caddress:billingAddress,
+      Cplace:placeOfSupply,
+      Cgst_type:gstType,
+      Cemail:email,
+      Cgst_no:gstIn,
+      paymethod:paymentMethod,
+      chequeno:chequeNumber,
+      upiId:upiId,
+      accountNumber:accountNumber,
+      subtotal:subTotal,
+      igst:igst,
+      cgst:cgst,
+      sgst:sgst,
+      taxAmount:taxAmount,
+      shippingCharge:shippingCharge,
+      adjustment:adjustment,
+      grandTotal:grandTotal,
+      paid:paid,
+      balance:balance,
+      status:status,
+      description:description,
+      file:file,
+      purchaseOrderItems:purchaseOrderItems,
+
     };
     axios
         .post(`${config.base_url}/create_new_purchase_order/`, dt)
@@ -2155,7 +2208,7 @@ function Add_Purchase_Order() {
               icon: "success",
               title: "Purchase Order Done",
             });
-            
+            navigate('/purchase_order');
           }
           if (!res.data.status && res.data.message != "") {
             Swal.fire({
@@ -2174,6 +2227,189 @@ function Add_Purchase_Order() {
           }
         });
   };
+  const [Vtitle, setVTitle] = useState("Mr");
+    const [VfirstName, setVFirstName] = useState("");
+    const [VlastName, setVLastName] = useState("");
+    const [Vcompany, setVCompany] = useState("");
+    const [Vlocation, setVLocation] = useState("");
+    const [VplaceOfSupply, setVPlaceOfSupply] = useState("");
+    const [VgstType, setVeGstType] = useState("");
+    const [VgstIn, setVGstIn] = useState("");
+    const [VpanNo, setVPanNo] = useState("");
+    const [VoBalType, setVOBalType] = useState("");
+    const [VoBal, setVOBal] = useState("");
+    const [VcreditLimit, setVCreditLimit] = useState("");
+    const [VpaymentTerm, setVPaymentTerm] = useState("");
+    const [VpriceList, setVPriceList] = useState("");
+    const [Vmail, setVEmail] = useState("");
+    const [Vwebsite, setVWebsite] = useState("");
+    const [Vmobile, setVMobile] = useState("");
+    const [Vcurrency, setVCurrency] = useState("");
+    const [VbStreet, setVBStreet] = useState("");
+    const [VbCity, setVBCity] = useState("");
+    const [VbState, setVBState] = useState("");
+    const [VbPincode, setVBPincode] = useState("");
+    const [VbCountry, setVBCountry] = useState("");
+  
+    const [VsStreet, setVSStreet] = useState("");
+    const [VsCity, setVSCity] = useState("");
+    const [VsState, setVSState] = useState("");
+    const [VsPincode, setVSPincode] = useState("");
+    const [VsCountry, setVSCountry] = useState("");
+
+    const add_vendor_new = (e) => {
+      e.preventDefault();
+  
+      var dt = {
+        Id: ID,
+        Title:Vtitle,
+        Firstname:VfirstName,
+        Lastname:VlastName,
+        Company:Vcompany,
+        Location:Vlocation,
+        Email:Vmail,
+        Website:Vwebsite,
+        Mobile:Vmobile,
+        Gsttype:VgstType,
+        Gstno:VgstIn,
+        Panno:VpanNo,
+        Placeofsupply:VplaceOfSupply,
+        Currency:Vcurrency,
+        Openingbalance:VoBal,
+        Openingbalatype:VoBalType,
+        Creditlimit:VcreditLimit,
+        Payment:VpaymentTerm,
+        Billingstreet:VbStreet,
+        Billingcity:VbCity,
+        Billingcountry:VbCountry,
+        Billingstate:VbState,
+        Billingpin:VbPincode,
+        Shipstreet:VsStreet,
+        Shipcity:VsCity,
+        Shipstate:VsState,
+        Shippin:VsPincode,
+        Shipcountry:VsCountry,
+        status: "Active",
+      };
+  
+      axios
+        .post(`${config.base_url}/add_vendor_new/`, dt)
+        .then((res) => {
+          if (res.data.status) {
+            Toast.fire({
+              icon: "success",
+              title: "Vendor Added",
+            });
+            navigate("/add_purchase_order");
+
+          }
+          if (!res.data.status && res.data.message != "") {
+            Swal.fire({
+              icon: "error",
+              title: `${res.data.message}`,
+            });
+          }
+        })
+        .catch((err) => {
+          console.log("ERROR=", err);
+          if (!err.response.data.status) {
+            Swal.fire({
+              icon: "error",
+              title: `${err.response.data.message}`,
+            });
+          }
+        });
+    };
+    function handleEmail(value) {
+      setVEmail(value);
+      checkemail(value);
+    }
+    function handleWebSite(value) {
+      setVWebsite(value);
+      checkweb(value);
+    }
+    function handlePhone(value) {
+      setVMobile(value);
+      checkphone(value);
+    }
+    function handleGstIn(value) {
+      setVGstIn(value);
+      checkgst(value);
+    }
+    function handlePanNo(value) {
+      setVPanNo(value);
+      checkpan(value);
+    }
+    function checkemail(val) {
+      var emailinput = val;
+      var emailregexp = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+      if (emailinput.match(emailregexp)) {
+        document.getElementById("warnemail").innerHTML = "";
+        checkCustomerEmail(val);
+      } else {
+        document.getElementById("warnemail").innerHTML =
+          "Please provide a valid Email ID";
+        alert("Please provide a valid Email id");
+      }
+    }
+    function checkgst(val) {
+      var gstinput = val;
+      var gstregexp =
+        "[0-9]{2}[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}[1-9A-Za-z]{1}[Z]{1}[0-9a-zA-Z]{1}";
+  
+      if (gstinput.length === 15) {
+        if (gstinput.match(gstregexp)) {
+          document.getElementById("warngst").innerHTML = "";
+          checkCustomerGSTIN(val);
+        } else {
+          document.getElementById("warngst").innerHTML =
+            "Please provide a valid GST Number";
+          alert("Please provide a valid GST Number");
+        }
+      } else {
+        document.getElementById("warngst").innerHTML =
+          "Please provide a valid GST Number";
+        alert("Please provide a valid GST Number");
+      }
+    }
+    function checkpan(val) {
+      var paninput = val;
+      var panregexp = ["[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}"];
+      if (paninput.match(panregexp)) {
+        document.getElementById("warnpan").innerHTML = "";
+        checkCustomerPAN(val);
+      } else {
+        document.getElementById("warnpan").innerHTML =
+          "Please provide a valid PAN Number";
+        alert("Please provide a valid PAN Number");
+      }
+    }
+    function VplaceShipAddress() {
+      var chkbtn = document.getElementById("vendShipAddress");
+      if (chkbtn.checked == true) {
+        document.getElementById("vshipstreet").value = document.getElementById("vstreet").value;
+        document.getElementById("vshipcity").value =document.getElementById("vcity").value;
+        document.getElementById("vshippinco").value = document.getElementById("vpinco").value;
+        document.getElementById("vshipcountry").value = document.getElementById("vcountry").value;
+        document.getElementById("vshipState").value = document.getElementById("vstate").value;
+        var ss = document.getElementById("vshipstreet").value;
+        setVSStreet(ss);
+        var sc = document.getElementById("vshipcity").value;
+        setVSCity(sc);
+        var sp = document.getElementById("vshippinco").value;
+        setVSPincode(sp);
+        var sco = document.getElementById("vshipcountry").value;
+        setVSCountry(sco);
+        var sst = document.getElementById("vshipState").value;
+        setVSState(sst);
+      } else {
+        document.getElementById("vshipstreet").value = "";
+        document.getElementById("vshipcity").value = "";
+        document.getElementById("vshippinco").value = "";
+        document.getElementById("vshipcountry").value = "";
+        document.getElementById("vshipState").value = "";
+      }
+    }
 
   return (
     <>
@@ -2782,7 +3018,7 @@ function Add_Purchase_Order() {
                   <div className="col-md-12 table-responsive-md mt-3">
                     <table
                       className="table table-bordered table-hover mt-3"
-                      id="salesOrderItemsTable"
+                      id="purchaseOrderItemsTable"
                     >
                       <thead>
                         <tr>
@@ -2797,7 +3033,7 @@ function Add_Purchase_Order() {
                         </tr>
                       </thead>
                       <tbody id="items-table-body">
-                        {salesOrderItems.map((row) => (
+                        {purchaseOrderItems.map((row) => (
                           <tr key={row.id} id={`tab_row${row.id}`}>
                             <td
                               className="nnum"
@@ -2870,7 +3106,7 @@ function Add_Purchase_Order() {
                                 }}
                                 value={row.quantity}
                                 onChange={(e) =>
-                                  handleSalesOrderItemsInputChange(
+                                  handlepurchaseOrderItemsInputChange(
                                     row.id,
                                     "quantity",
                                     e.target.value
@@ -2921,7 +3157,7 @@ function Add_Purchase_Order() {
                                 style={{ display: "block" }}
                                 value={row.taxGst}
                                 onChange={(e) =>
-                                  handleSalesOrderItemsInputChange(
+                                  handlepurchaseOrderItemsInputChange(
                                     row.id,
                                     "taxGst",
                                     e.target.value
@@ -2944,7 +3180,7 @@ function Add_Purchase_Order() {
                                 style={{ display: "none" }}
                                 value={row.taxIgst}
                                 onChange={(e) =>
-                                  handleSalesOrderItemsInputChange(
+                                  handlepurchaseOrderItemsInputChange(
                                     row.id,
                                     "taxIgst",
                                     e.target.value
@@ -2969,7 +3205,7 @@ function Add_Purchase_Order() {
                                 id={`disc${row.id}`}
                                 value={row.discount}
                                 onChange={(e) =>
-                                  handleSalesOrderItemsInputChange(
+                                  handlepurchaseOrderItemsInputChange(
                                     row.id,
                                     "discount",
                                     e.target.value
@@ -3062,7 +3298,7 @@ function Add_Purchase_Order() {
                   <div className="col-md-1"></div>
                   <div
                     className="col-md-5 table-responsive-md mt-3 "
-                    id="salesOrderItemsTableTotal"
+                    id="purchaseOrderItemsTableTotal"
                     style={{
                       backgroundColor: "rgba(0,0,0,0.4)",
                       border: "1px solid rgba(128, 128, 128, 0.6)",
@@ -3247,7 +3483,7 @@ function Add_Purchase_Order() {
                   <div className="col-md-7"></div>
                   <div
                     className="col-md-5 table-responsive-md mt-3 "
-                    id="salesOrderItemsTablePaid"
+                    id="purchaseOrderItemsTablePaid"
                     style={{
                       backgroundColor: "rgba(0,0,0,0.4)",
                       border: "1px solid rgba(128, 128, 128, 0.6)",
@@ -4561,12 +4797,12 @@ function Add_Purchase_Order() {
             </div>
             <div className="modal-body">
                 <div className="card p-3">
-                    <form method="post" id="newVendorForm">
+                    <form method="post" id="newVendorForm" onSubmit={add_vendor_new}>
                       
                         <div className="row mt-3">
                             <div className="col-md-3">
                                 <label for="vendTitle">Title</label>
-                                <select name="vendTitle" id="vendTitle" className="form-control" style={{backgroundColor:'#43596c',width:'210px'}}>
+                                <select name="vendTitle" id="vendTitle" className="form-control" style={{backgroundColor:'#43596c',width:'210px'}} value={Vtitle} onChange={(e) => setVTitle(e.target.value)}>
                                     <option value="Mr">Mr</option>
                                     <option value="Mrs">Mrs</option>
                                     <option value="Ms">Ms</option>
@@ -4576,17 +4812,17 @@ function Add_Purchase_Order() {
                             </div>
                             <div className="col-md-3">
                                 <label for="vendFirstName">First Name</label>
-                                <input type="text" className="form-control" id="vendFirstName" name="first_name" required style={{backgroundColor:'#43596c',color:'white'}} />
+                                <input type="text" className="form-control" id="vendFirstName" name="first_name" required style={{backgroundColor:'#43596c',color:'white'}} value={VfirstName} onChange={(e) => setVFirstName(e.target.value)}/>
                                 <div className="valid-feedback">Looks good!</div>
                             </div>
                             <div className="col-md-3">
                                 <label for="vendLastName">Last Name</label>
-                                <input type="text" className="form-control" id="vendLastName" name="last_name" required style={{backgroundColor:'#43596c',color:'white'}} />
+                                <input type="text" className="form-control" id="vendLastName" name="last_name" required style={{backgroundColor:'#43596c',color:'white'}} value={VlastName} onChange={(e) => setVLastName(e.target.value)}/>
                                 <div className="valid-feedback">Looks good!</div>
                             </div>
                             <div className="col-md-3">
                                 <label for="vendCompanyName">Company</label>
-                                <input type="text" className="form-control" id="vendCompanyName" name="company_name" style={{backgroundColor:'#43596c',color:'white'}} />
+                                <input type="text" className="form-control" id="vendCompanyName" name="company_name" style={{backgroundColor:'#43596c',color:'white'}} value={Vcompany} onChange={(e) => setVCompany(e.target.value)}/>
                                 <div className="valid-feedback">Looks good!</div>
                             </div>
                         </div>
@@ -4594,22 +4830,22 @@ function Add_Purchase_Order() {
                         <div className="row mt-3">
                             <div className="col-md-3">
                                 <label for="vendLocation">Location</label>
-                                <input type="text" className="form-control" id="vendLocation" name="vendLocation" style={{backgroundColor:'#43596c',color:'white'}} />
+                                <input type="text" className="form-control" id="vendLocation" name="vendLocation" style={{backgroundColor:'#43596c',color:'white'}} value={Vlocation} onChange={(e) => setVLocation(e.target.value)}/>
                                 <div className="valid-feedback">Looks good!</div>
                             </div>
                             <div className="col-md-3">
                                 <label for="vendEmail">Email</label>
-                                <input type="email" className="form-control" required id="vendEmail" name="email" onchange="checkVendEmail(this)" style={{backgroundColor:'#43596c',color:'white'}} placeholder="finsys@gmail.com" />
+                                <input type="email" className="form-control" required id="vendEmail" name="email"  style={{backgroundColor:'#43596c',color:'white'}} placeholder="finsys@gmail.com" value={Vmail} onChange={(e) => handleEmail(e.target.value)}/>
                                 <div className="invalid-feedback">Please provide a valid Email</div>
                             </div>
                             <div className="col-md-3">
                                 <label for="vendWebsite">Website</label>
-                                <input type="text" className="form-control" id="vendWebsite" required placeholder="www.finsys.com" onchange="checkVendWebsite(this)" name="website" style={{backgroundColor:'#43596c',color:'white'}} />
+                                <input type="text" className="form-control" id="vendWebsite" placeholder="www.finsys.com"  name="website" style={{backgroundColor:'#43596c',color:'white'}} value={Vwebsite} onChange={(e) => handleWebSite(e.target.value)}/>
                                 <div id="warnvendweb" className="text-danger"></div>
                             </div>
                             <div className="col-md-3">
                                 <label for="vendMobile">Mobile</label>
-                                <input type="text" className="form-control" id="vendMobile" required onchange="checkVendPhone(this)" name="mobile" style={{backgroundColor:'#43596c',color:'white'}} />
+                                <input type="text" className="form-control" id="vendMobile" required  name="mobile" style={{backgroundColor:'#43596c',color:'white'}} value={Vmobile} onChange={(e) => handlePhone(e.target.value)}/>
                                 <div className="text-danger m-2" id="warnphone"></div>
                             </div>
                         </div>
@@ -4621,7 +4857,7 @@ function Add_Purchase_Order() {
                         <div className="row mt-3">
                             <div className="col-md-3">
                                 <label for="vendGstType">GST Type</label>
-                                <select className="form-control" id="vendGstType" name="gst_type" onclick="toggleGSTIN('gstInValue', this)" style={{backgroundColor:'#43596c',color:'white'}} required>
+                                <select className="form-control" id="vendGstType" name="gst_type" style={{backgroundColor:'#43596c',color:'white'}} required value={VgstType} onChange={(e) => setVeGstType(e.target.value)}>
                                     <option selected value="">Select GST Type</option>
                                     <option value="Registered Business - Regular">Registered Business - Regular <span><i>(Business that is registered under gst)</i></span></option>
                                     <option value="Registered Business - Composition">Registered Business - Composition (Business that is registered under composition scheme in gst)</option>
@@ -4639,7 +4875,7 @@ function Add_Purchase_Order() {
                             <div className="col-md-3 vendgstrow d-block" id="gstInValue">
                                 <div>
                                     <label for="vendGstIN">GSTIN</label>
-                                    <input type="text" className="form-control" onchange="checkGSTIN(this)" id="vendGstIN" name="vendGstIN" style={{backgroundColor:'#43596c',color:'white'}} placeholder="29APPCK7465F1Z1" />
+                                    <input type="text" className="form-control"  id="vendGstIN" name="vendGstIN" style={{backgroundColor:'#43596c',color:'white'}} placeholder="29APPCK7465F1Z1" value={VgstIn} onChange={(e) => handleGstIn(e.target.value)}/>
                                     <a data-toggle="modal" href="#exampleModal" style={{color:'#3dd5f3'}}>Get Taxpayer Details</a>
                                     <div className="text-danger m-2" id="warngst"></div>
                                 </div>
@@ -4647,13 +4883,13 @@ function Add_Purchase_Order() {
     
                             <div className="col-md-3">
                                 <label for="vendPanNo">PAN No.</label>
-                                <input type="text" className="form-control" id="vendPanNo" name="pan_no" style={{backgroundColor:'#43596c',color:'white'}} required onchange="checkVendPAN(this)" placeholder="APPCK7465F" />
+                                <input type="text" className="form-control" id="vendPanNo" name="pan_no" style={{backgroundColor:'#43596c',color:'white'}} required placeholder="APPCK7465F" value={VpanNo} onChange={(e) => handlePanNo(e.target.value)}/>
                                 <div className="text-danger m-2" id="warnpan"></div>
                             </div>
     
                             <div className="col-md-3">
                                 <label for="vendPlaceOfSupply">Place of Supply</label>
-                                <select className="custom-select form-control" id="vendPlaceOfSupply" name="place_of_supply" style={{backgroundColor:'#43596c',color:'white'}} required>
+                                <select className="custom-select form-control" id="vendPlaceOfSupply" name="place_of_supply" style={{backgroundColor:'#43596c',color:'white'}} required value={VplaceOfSupply} onChange={(e) => setVPlaceOfSupply(e.target.value)}>
                                     <option selected value="">Select Place of Supply</option>
                                     <option value="Andaman and Nicobar Islads">Andaman and Nicobar Islands</option>
                                     <option value="Andhra Predhesh">Andhra Predhesh</option>
@@ -4702,7 +4938,7 @@ function Add_Purchase_Order() {
                         <div className="row">
                             <div className="col-md-3 mt-3">
                                 <label for="">Currency</label>
-                                <select name="vendCurrency" id="vendCurrency" className="form-control" style={{backgroundColor:'#43596c'}}>
+                                <select name="vendCurrency" id="vendCurrency" className="form-control" style={{backgroundColor:'#43596c'}} value={Vcurrency} onChange={(e) => setVCurrency(e.target.value)}>
                                     <option value="INR - Indian Rupee">INR - Indian Rupee</option>
                                 </select>
                             </div>
@@ -4710,29 +4946,32 @@ function Add_Purchase_Order() {
                             <div className="col-md-3 mt-3">
                                 <label for="">Opening Balance</label>
                                 <div className="d-flex">
-                                    <select name="balance_type" id="vend_bal_type" className="form-select text-white mr-1" style={{backgroundColor:'#243e54',width:'100px',borderRadius:'5px'}}>
+                                    <select name="balance_type" id="vend_bal_type" className="form-select text-white mr-1" style={{backgroundColor:'#243e54',width:'100px',borderRadius:'5px'}} value={VoBalType} onChange={(e) => handleVOpenBalType(e.target.value)}>
                                         <option value="credit">Credit</option>
                                         <option value="debit">Debit</option>
                                     </select>
-                                    <input type="text" className="form-control" name="open_balance" id="vendopenbalance" step="any" style={{backgroundColor:'#43596c',color:'white',width:'110px'}} />
+                                    <input type="text" className="form-control" name="open_balance" id="vendopenbalance" step="any" style={{backgroundColor:'#43596c',color:'white',width:'110px'}} value={VoBal} onChange={(e) => setVOBal(e.target.value)}/>
                                     <div className="text-danger m-2" ></div>
                                 </div>
                             </div>
     
                             <div className="col-md-3 mt-3">
                                 <label for="vendCreditLimit">Credit Limit</label>
-                                <input type="text" className="form-control" name="credit_limit" style={{backgroundColor:'#43596c',color:'white'}} value="0" step="any" id="vendCreditLimit" />
+                                <input type="text" className="form-control" name="credit_limit" style={{backgroundColor:'#43596c',color:'white'}}  step="any" id="vendCreditLimit" value={VcreditLimit} onChange={(e) => setVCreditLimit(e.target.value)}/>
                                 <div className="text-danger m-2" ></div>
                             </div>
     
                             <div className="col-md-3 mt-3">
                                 <label for="vendPaymentTerms">Payment Terms</label>
                                 <div className="d-flex">
-                                    <select name="payment_terms" id="vendPaymentTerms" className="form-control" style={{backgroundColor:'#43596c'}}>
+                                    <select name="payment_terms" id="vendPaymentTerms" className="form-control" style={{backgroundColor:'#43596c'}} onChange={(e) => setVPaymentTerm(e.target.value)} value={VpaymentTerm}>
                                         <option value="" selected>Choose</option>
-                                        {/* {% for p in pTerms %}
-                                        <option value="{{p.id}}">{{p.term_name}}</option>
-                                        {% endfor %} */}
+                                                    {terms &&
+                                      terms.map((term) => (
+                                        <option value={term.id} text={term.days}>
+                                          {term.term_name}
+                                        </option>
+                                      ))}
                                     </select>
                                     <a href="#newVendorPaymentTerm" data-dismiss="modal" data-toggle="modal" className="btn btn-outline-secondary ml-1" style={{width:'40px',height:'38px',position:'relative',bottom:'10px'}}>+</a>
                                 </div>
@@ -4740,7 +4979,7 @@ function Add_Purchase_Order() {
     
                             <div className="col-md-3 mt-3">
                                 <label for="vendPriceList">Price List</label>
-                                <select name="price_list" id="vendPriceList" className="form-control" style={{backgroundColor:'#43596c'}}>
+                                <select name="price_list" id="vendPriceList" className="form-control" style={{backgroundColor:'#43596c'}} value={VpriceList} onChange={(e) => setVPriceList(e.target.value)}>
                                     <option value="" selected>Choose</option>
                                     {/* {% for l in list %}
                                     <option value="{{l.id}}">{{l.name}}</option>
@@ -4758,26 +4997,48 @@ function Add_Purchase_Order() {
                                     </div>
                                 </div>
                                 <div className="row">
-                                    <div className="col-md-12 mt-3">
-                                        <div className="form-row">
-                                            <label for="vendstreet">Street</label>
-                                            <textarea className="form-control street" required id="vendstreet" name="vendstreet" style={{backgroundColor:'#43596c',color:'white'}}></textarea>
-                                            <div className="invalid-feedback">Please provide a valid Street</div>
-                                        </div>
+                                <div className="col-md-12 mt-3">
+                                  <div className="form-row">
+                                    <label htmlFor="street">Street</label>
+                                    <textarea
+                                      className="form-control street"
+                                      required
+                                      id="vstreet"
+                                      name="vstreet"
+                                      value={VbStreet}
+                                      onChange={(e) => setVBStreet(e.target.value)}
+                                      style={{ backgroundColor: "#43596c", color: "white" }}
+                                    />
+                                    <div className="invalid-feedback">
+                                      Please provide a valid Street
                                     </div>
+                                  </div>
                                 </div>
-                                <div className="row">
-                                    <div className="col-md-6 mt-3">
-                                        <div className="form-row">
-                                            <label for="vendcity">City</label>
-                                            <input type="text" className="form-control" required id="vendcity" name="vendcity" style={{backgroundColor:'#43596c',color:'white'}} placeholder="City" />
-                                            <div className="invalid-feedback">Please provide a valid City</div>
-                                        </div>
+                              </div>
+                              <div className="row">
+                                <div className="col-md-6 mt-3">
+                                  <div className="form-row">
+                                    <label htmlFor="city">City</label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      required
+                                      id="vcity"
+                                      value={VbCity}
+                                      onChange={(e) => setVBCity(e.target.value)}
+                                      name="vcity"
+                                      style={{ backgroundColor: "#43596c", color: "white" }}
+                                      placeholder="City"
+                                    />
+                                    <div className="invalid-feedback">
+                                      Please provide a valid City
                                     </div>
+                                  </div>
+                                </div>
                                     <div className="col-md-6 mt-3">
                                         <div className="form-row">
                                             <label for="vendstate">State</label>
-                                            <select type="text" className="form-control" id="vendstate" name="vendstate" required style={{backgroundColor:'#43596c',color:'white'}}>
+                                            <select type="text" className="form-control" id="vstate" name="vstate" required style={{backgroundColor:'#43596c',color:'white'}} value={VbState} onChange={(e) => setVBState(e.target.value)}>
                                                 <option value="" selected hidden>Choose</option>
                                                 <option value="Andaman and Nicobar Islads">Andaman and Nicobar Islands</option>
                                                 <option value="Andhra Predhesh">Andhra Predhesh</option>
@@ -4825,15 +5086,15 @@ function Add_Purchase_Order() {
                                 <div className="row">
                                     <div className="col-md-6 mt-3">
                                         <div className="form-row">
-                                            <label for="vendpinco">Pin Code</label>
-                                            <input type="text" className="form-control" required id="vendpinco" name="vendpincode" style={{backgroundColor:'#43596c',color:'white'}} placeholder="PIN code" />
+                                            <label for="vpinco">Pin Code</label>
+                                            <input type="text" className="form-control" required id="vpinco" name="vpincode" style={{backgroundColor:'#43596c',color:'white'}} placeholder="PIN code" value={VbPincode} onChange={(e) => setVBPincode(e.target.value)}/>
                                             <div className="invalid-feedback">Please provide a valid Pin Code</div>
                                         </div>
                                     </div>
                                     <div className="col-md-6 mt-3">
                                         <div className="form-row">
-                                            <label for="vendcountry">Country</label>
-                                            <input type="text" className="form-control" required id="vendcountry" name="vendcountry" style={{backgroundColor:'#43596c',color:'white'}} placeholder="Country" />
+                                            <label for="vcountry">Country</label>
+                                            <input type="text" className="form-control" required id="vcountry" name="vcountry" style={{backgroundColor:'#43596c',color:'white'}} placeholder="Country" value={VbCountry} onChange={(e) => setVBCountry(e.target.value)}/>
                                             <div className="invalid-feedback">Please provide a valid Country</div>
                                         </div>
                                     </div>
@@ -4843,31 +5104,51 @@ function Add_Purchase_Order() {
                                 <div className="row">
                                     <div className="col-md-12 d-flex">
                                         <h5>Shipping Address</h5>
-                                        <input className="ml-4 ml-5" type="checkbox" onclick="placeVendShipAddress()" id="vendShipAddress" name="ship_address" />
+                                        <input className="ml-4 ml-5" type="checkbox" id="vendShipAddress" name="ship_address" onClick={VplaceShipAddress}/>
                                         <label className="ml-2 mt-1 ml-2" for="vendShipAddress">Same As Billing Address</label>
                                     </div>
                                 </div>
                                 <div className="row">
-                                    <div className="col-md-12 mt-3">
-                                        <div className="form-row">
-                                            <label for="vendshipstreet">Street</label>
-                                            <textarea className="form-control" id="vendshipstreet" name="vendshipstreet" style={{backgroundColor:'#43596c',color:'white'}}></textarea>
-                                            <div className="invalid-feedback">Please provide a valid Street</div>
-                                        </div>
+                                  <div className="col-md-12 mt-3">
+                                    <div className="form-row">
+                                      <label htmlFor="shipstreet">Street</label>
+                                      <textarea
+                                        className="form-control"
+                                        id="vshipstreet"
+                                        name="shipstreet"
+                                        style={{ backgroundColor: "#43596c", color: "white" }}
+                                        value={VsStreet}
+                                        onChange={(e) => setVSStreet(e.target.value)}
+                                      />
+                                      <div className="invalid-feedback">
+                                        Please provide a valid Street
+                                      </div>
                                     </div>
+                                  </div>
                                 </div>
                                 <div className="row">
                                     <div className="col-md-6 mt-3">
-                                        <div className="form-row">
-                                            <label for="vendshipcity">City</label>
-                                            <input type="text" className="form-control" id="vendshipcity" name="vendshipcity" style={{backgroundColor:'#43596c',color:'white'}} placeholder="City" />
-                                            <div className="invalid-feedback">Please provide a valid City</div>
+                                      <div className="form-row">
+                                        <label htmlFor="shipcity">City</label>
+                                        <input
+                                          type="text"
+                                          className="form-control"
+                                          id="vshipcity"
+                                          name="shipcity"
+                                          style={{ backgroundColor: "#43596c", color: "white" }}
+                                          placeholder="City"
+                                          value={VsCity}
+                                          onChange={(e) => setVSCity(e.target.value)}
+                                        />
+                                        <div className="invalid-feedback">
+                                          Please provide a valid City
                                         </div>
+                                      </div>
                                     </div>
                                     <div className="col-md-6 mt-3">
                                         <div className="form-row">
                                             <label for="vendshipstate">State</label>
-                                            <select type="text" className="form-control" id="vendshipState" name="vendshipstate" style={{backgroundColor:'#43596c',color:'white'}}>
+                                            <select type="text" className="form-control" id="vshipState" name="vendshipstate" style={{backgroundColor:'#43596c',color:'white'}} value={VsState} onChange={(e) => setVSState(e.target.value)}>
                                                 <option value="" selected>Choose</option>
                                                 <option value="Andaman and Nicobar Islads">Andaman and Nicobar Islands</option>
                                                 <option value="Andhra Predhesh">Andhra Predhesh</option>
@@ -4915,15 +5196,15 @@ function Add_Purchase_Order() {
                                 <div className="row">
                                     <div className="col-md-6 mt-3">
                                         <div className="form-row">
-                                            <label for="vendshippinco">Pin Code</label>
-                                            <input type="text" className="form-control" id="vendshippinco" name="vendshippincode" style={{backgroundColor:'#43596c',color:'white'}} placeholder="PIN code" />
+                                            <label for="vshippinco">Pin Code</label>
+                                            <input type="text" className="form-control" id="vshippinco" name="vendshippincode" style={{backgroundColor:'#43596c',color:'white'}} placeholder="PIN code" value={VsPincode} onChange={(e) => setVSPincode(e.target.value)}/>
                                             <div className="invalid-feedback">Please provide a valid Pin Code</div>
                                         </div>
                                     </div>
                                     <div className="col-md-6 mt-3">
                                         <div className="form-row">
-                                            <label for="vendshipcountry">Country</label>
-                                            <input type="text" className="form-control" id="vendshipcountry" name="vendshipcountry" style={{backgroundColor:'#43596c',color:'white'}} placeholder="Country" />
+                                            <label for="vshipcountry">Country</label>
+                                            <input type="text" className="form-control" id="vshipcountry" name="vendshipcountry" style={{backgroundColor:'#43596c',color:'white'}} placeholder="Country" value={VsCountry} onChange={(e) => setVSCountry(e.target.value)}/>
                                             <div className="invalid-feedback">Please provide a valid Country</div>
                                         </div>
                                     </div>
@@ -4934,7 +5215,7 @@ function Add_Purchase_Order() {
                         <div className="row mt-4">
                             <div className="col-4"></div>
                             <div className="col-4 d-flex justify-content-center">
-                                <button className="btn btn-outline-secondary text-grey " type="button" id="newVendorSave" style={{width:'100px'}}>Save</button>
+                                <button className="btn btn-outline-secondary text-grey " type="submit" id="newVendorSave" style={{width:'100px'}}>Save</button>
                             </div>
                             <div className="col-4"></div>
                         </div>

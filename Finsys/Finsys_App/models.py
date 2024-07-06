@@ -757,7 +757,7 @@ class Fin_Purchase_Order(models.Model):
     price_list_applied = models.BooleanField(null=True, default=False)
     price_list = models.ForeignKey(Fin_Price_List, on_delete = models.SET_NULL,null=True)
 
-    subtotal = models.IntegerField(default=0, null=True)
+    subtotal = models.FloatField(default=0.0, null=True)
     igst = models.FloatField(default=0.0, null=True, blank=True)
     cgst = models.FloatField(default=0.0, null=True, blank=True)
     sgst = models.FloatField(default=0.0, null=True, blank=True)

@@ -229,6 +229,7 @@ urlpatterns = [
     path('fetch_purchase_order_data/<int:id>/',Fin_fetch_purchase_order_data),
     path('get_vendor_data/',Fin_get_vendor_data),
     path('create_new_purchase_order/',Fin_create_new_purchase_order),
+    path('fetch_purchase_order/<int:id>/',Fin_fetch_purchase_order),
     # path('fetch_vendors/<int:ID>/',Fin_fetch_vendors),
     # path('get_vendor_details/<int:id>/',Fin_get_vendor_details),
     # path('fetch_customers/<int:ID>/',Fin_fetch_customers),
