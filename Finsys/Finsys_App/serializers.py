@@ -201,3 +201,13 @@ class VendorCommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 #End
+#Purchase Order
+class PurchaseOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Fin_Purchase_Order
+        fields = '__all__'
+
+class PurchaseOrderCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Fin_Purchase_Order_Comments
+        fields = '__all__'

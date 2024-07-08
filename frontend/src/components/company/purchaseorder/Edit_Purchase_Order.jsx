@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import FinBase from "../FinBase";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Cookies from "js-cookie";
 import axios from "axios";
 import config from "../../../functions/config";
 import Swal from "sweetalert2";
 import Select from "react-select";
 
-function Add_Purchase_Order() {
-  const ID = Cookies.get("Login_id");
-  const navigate = useNavigate();
+function Edit_Purchase_Order() {
+    const ID = Cookies.get("Login_id");
+    const {id} = useParams();
+    const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [vendors,setVendors] = useState([]);
@@ -2411,10 +2412,10 @@ function Add_Purchase_Order() {
       }
     }
 
-  return (
-    <>
-      <FinBase />
-      <div
+    return(
+        <>
+        <FinBase />
+        <div
         className="page-content mt-0 pt-0"
         style={{ backgroundColor: "#2f516f", minHeight: "100vh" }}
       >
@@ -5781,8 +5782,9 @@ function Add_Purchase_Order() {
           </div>
         </div>
       </div>
-    </>
-  );
-}
 
-export default Add_Purchase_Order;
+        </>
+    )
+    
+}
+export default Edit_Purchase_Order;

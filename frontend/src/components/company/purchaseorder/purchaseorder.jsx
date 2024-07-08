@@ -292,7 +292,7 @@ function Purchase_order () {
                 {purchaseorders &&purchaseorders.map((i,index)=>(
                   <tr
                     className="clickable-row"
-                    onDoubleClick={()=>navigate(`/view_sales_order/${i.id}/`)}
+                    onDoubleClick={()=>navigate(`/view_purchase_order/${i.id}/`)}
                     style={{ cursor: "pointer" }}
                   >
                     <td>{index+1}</td>

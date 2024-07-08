@@ -9451,3 +9451,205 @@ def Fin_fetch_purchase_order(request, id):
             {"status": False, "message": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+    
+@api_view(("GET",))
+def Fin_fetch_purchase_order_details(request, id):
+    try:
+        purchase = Fin_Purchase_Order.objects.get(id=id)
+        cmp = purchase.Company
+        hist = Fin_Purchase_Order_History.objects.filter(PurchaseOrder=purchase).last()
+        his = None
+        if hist:
+            his = {
+                "action": hist.action,
+                "date": hist.date,
+                "doneBy": hist.LoginDetails.First_name
+                + " "
+                + hist.LoginDetails.Last_name,
+            }
+        cmt = Fin_Purchase_Order_Comments.objects.filter(PurchaseOrder=purchase)
+        itms = Fin_Purchase_Order_Items.objects.filter(PurchaseOrder=purchase)
+        
+        try:
+            created = Fin_Purchase_Order_History.objects.get(PurchaseOrder = purchase, action = 'Created')
+        except:
+            created = None
+        otherDet = {
+            "Company_name": cmp.Company_name,
+            "Email": cmp.Email,
+            "Mobile": cmp.Contact,
+            "Address": cmp.Address,
+            "City": cmp.City,
+            "State": cmp.State,
+            "Pincode": cmp.Pincode,
+            "customerName": purchase.Customer.first_name+' '+purchase.Customer.last_name,
+            "customerEmail": purchase.Customer.email,
+            "createdBy": created.LoginDetails.First_name if created else "",
+            "vendorname":purchase.Vendor.First_name+' '+purchase.Vendor.Last_name,
+            "vendoremail":purchase.Vendor.Vendor_email
+        }
+        items = []
+        for i in itms:
+            obj = {
+                "id":i.id,
+                "itemId": i.Item.id,
+                "sales_price": i.Item.selling_price,
+                'name': i.Item.name,
+                "item_type": i.Item.item_type,
+                "hsn": i.hsn,
+                "sac": i.sac,
+                "quantity": i.quantity,
+                "price": i.price,
+                "tax": i.tax,
+                "discount": i.discount,
+                "total": i.total
+            }
+            items.append(obj)
+        purchaseSerializer = PurchaseOrderSerializer(purchase)
+        commentsSerializer = PurchaseOrderCommentSerializer(cmt, many=True)
+        return Response(
+            {
+                "status": True,
+                "purchase": purchaseSerializer.data,
+                "history": his,
+                "comments": commentsSerializer.data,
+                "items": items,
+                "otherDetails": otherDet,
+            },
+            status=status.HTTP_200_OK,
+        )
+    except Exception as e:
+        return Response(
+            {"status": False, "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    
+@api_view(("GET",))
+def Fin_purchase_Order_PDF(request):
+    try:
+        id = request.GET['Id']
+        pId = request.GET['id']
+
+        data = Fin_Login_Details.objects.get(id=id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id=data.id)
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id=data.id).company_id
+
+        purchaseOrder = Fin_Purchase_Order.objects.get(id=pId)
+        itms = Fin_Purchase_Order_Items.objects.filter(PurchaseOrder=purchaseOrder)
+        context = {'order':purchaseOrder, 'orderItems':itms,'cmp':com}
+        
+        template_path = 'company/Fin_Purchase_Order_Pdf.html'
+        fname = 'Purchase_Order_'+purchaseOrder.purchase_order_no
+        # Create a Django response object, and specify content_type as pdftemp_
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = f"attachment; filename = {fname}.pdf"
+        # find the template and render it.
+        template = get_template(template_path)
+        html = template.render(context)
+
+        # create a pdf
+        pisa_status = pisa.CreatePDF(html, dest=response)
+        # if error then show some funny view
+        if pisa_status.err:
+            return HttpResponse("We had some errors <pre>" + html + "</pre>")
+        return response
+    except Exception as e:
+        return Response(
+            {"status": False, "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    
+@api_view(("POST",))
+def Fin_share_purchase_order_mail(request):
+    try:
+        id = request.data["Id"]
+        data = Fin_Login_Details.objects.get(id=id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id=data.id)
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id=data.id).company_id
+
+        pId = request.data["id"]
+
+        emails_string = request.data["email_ids"]
+
+        # Split the string by commas and remove any leading or trailing whitespace
+        emails_list = [email.strip() for email in emails_string.split(",")]
+        email_message = request.data["email_message"]
+        # print(emails_list)
+
+        purchaseOrder = Fin_Purchase_Order.objects.get(id=pId)
+        itms = Fin_Purchase_Order_Items.objects.filter(PurchaseOrder=purchaseOrder)
+        context = {'order':purchaseOrder, 'orderItems':itms,'cmp':com}
+        
+        template_path = 'company/Fin_Purchase_Order_Pdf.html'
+        template = get_template(template_path)
+
+        html = template.render(context)
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+        pdf = result.getvalue()
+        filename = f'PurchaseOrder_{purchaseOrder.purchase_order_no}.pdf'
+        subject = f"PurchaseOrder_{purchaseOrder.purchase_order_no}"
+        email = EmailMessage(
+            subject,
+            f"Hi,\nPlease find the attached details - PURCHASE ORDER-{purchaseOrder.purchase_order_no}. \n{email_message}\n\n--\nRegards,\n{com.Company_name}\n{com.Address}\n{com.State} - {com.Country}\n{com.Contact}",
+            from_email=settings.EMAIL_HOST_USER,
+            to=emails_list,
+        )
+        email.attach(filename, pdf, "application/pdf")
+        email.send(fail_silently=False)
+
+        return Response({"status": True}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {"status": False, "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    
+@api_view(("DELETE",))
+def Fin_delete_Purchase_Order(request, id):
+    try:
+        purchase = Fin_Purchase_Order.objects.get(id=id)
+        com = purchase.Company
+        Fin_Purchase_Order_Items.objects.filter(PurchaseOrder = purchase).delete()
+        if Fin_Purchase_Order_Reference.objects.filter(Company = com).exists():
+            deleted = Fin_Purchase_Order_Reference.objects.get(Company = com)
+            if int(purchase.reference_no) > int(deleted.reference_no):
+                deleted.reference_no = purchase.reference_no
+                deleted.save()
+        else:
+            Fin_Purchase_Order_Reference.objects.create(Company = com, reference_no = purchase.reference_no)
+        purchase.delete()
+        return Response({"status": True}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {"status": False, "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+@api_view(("POST",))
+def Fin_add_purchase_order_comment(request):
+    try:
+        id = request.data["Id"]
+        data = Fin_Login_Details.objects.get(id=id)
+        if data.User_Type == "Company":
+            com = Fin_Company_Details.objects.get(Login_Id=id)
+        else:
+            com = Fin_Staff_Details.objects.get(Login_Id=id).company_id
+
+        comments = request.data["comments"]
+        Po_id = request.data["id"]
+        po = Fin_Purchase_Order.objects.get(id=Po_id)
+        p_comment = Fin_Purchase_Order_Comments.objects.create(Company=com,comments=comments,PurchaseOrder=po)
+        serializer = PurchaseOrderCommentSerializer(p_comment)
+        p_comment.save()
+        return Response({"status": True,"data":serializer.data}, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {"status": False, "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

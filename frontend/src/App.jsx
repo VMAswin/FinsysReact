@@ -96,6 +96,7 @@ import Vendorhistory from './components/company/vendors/vendorhistory';
 import View_purchase_order from './components/company/purchaseorder/viewpurchaseorder';
 import Purchase_order from './components/company/purchaseorder/purchaseorder';
 import Add_Purchase_Order from './components/company/purchaseorder/Add_purchase_order';
+import Edit_Purchase_Order from './components/company/purchaseorder/Edit_Purchase_Order';
 
 function App() {
   return (
@@ -223,9 +224,10 @@ function App() {
             <Route path="/vendor_history/:id/" element={<Vendorhistory />} />
 
             {/* Purchase Order */}
-            <Route path="/view_purchase_order" element={<View_purchase_order />} />
+            <Route path="/view_purchase_order/:id" element={<View_purchase_order />} />
             <Route path="/purchase_order" element={<Purchase_order />} />
             <Route path="/add_purchase_order" element={<Add_Purchase_Order />} />
+            <Route path="/edit_purchase_order/:id" element={<Edit_Purchase_Order />} />
 
           </Route>
         </Routes>

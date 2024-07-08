@@ -230,11 +230,11 @@ urlpatterns = [
     path('get_vendor_data/',Fin_get_vendor_data),
     path('create_new_purchase_order/',Fin_create_new_purchase_order),
     path('fetch_purchase_order/<int:id>/',Fin_fetch_purchase_order),
-    # path('fetch_vendors/<int:ID>/',Fin_fetch_vendors),
-    # path('get_vendor_details/<int:id>/',Fin_get_vendor_details),
-    # path('fetch_customers/<int:ID>/',Fin_fetch_customers),
-    # path('get_customer_details/<int:id>/',Fin_get_customer_details),
-    # path('get_item_details/<int:id>/',Fin_get_item_details),
+    path('fetch_purchase_order_details/<int:id>/',Fin_fetch_purchase_order_details),
+    path('purchase_Order_PDF/',Fin_purchase_Order_PDF),
+    path('share_purchase_order_mail/',Fin_share_purchase_order_mail),
+    path('delete_Purchase_Order/<int:id>/',Fin_delete_Purchase_Order),
+    path('add_purchase_order_comment/',Fin_add_purchase_order_comment),
 
     re_path(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}),
     
